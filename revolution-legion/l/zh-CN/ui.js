@@ -565,7 +565,15 @@ export class UI {
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">欢迎回来！</div><h3>${h}小时${m}分钟</h3><p>这段时间环也在转动（效率${Math.round(r.eff * 100)}%）<br>关卡 +${r.stage}　旋转 +${fnum(r.laps, 0)}${r.found ? `<br>新道具 ${r.found}种` : ''}${r.flux ? `<br>双倍时间 +${Math.floor(r.flux / 60)}分钟` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? '再领一份' : '看广告翻倍'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('挂机奖励翻倍！', `关卡 +${r2.stage}`); } else this.toast('广告加载失败', '请检查网络或广告拦截器（如AdGuard）'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('挂机奖励翻倍！', `关卡 +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('检测到广告拦截器', '不看广告就无法领取奖励。请关闭广告拦截器。');
+    else if (why === 'noad') this.toast('暂时没有广告', '请稍等片刻再试一次。');
+    else if (why === 'dismissed') this.toast('看完广告才能领取奖励');
+    else this.toast('广告加载失败', '请检查网络或广告拦截器（如AdGuard）');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ export class UI {
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('已领取奖励', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('广告加载失败', '请检查网络或广告拦截器（如AdGuard）');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');

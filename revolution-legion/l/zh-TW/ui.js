@@ -565,7 +565,15 @@ export class UI {
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">歡迎回來！</div><h3>${h}小時${m}分鐘</h3><p>這段期間圓環也持續轉動（效率${Math.round(r.eff * 100)}%）<br>關卡 +${r.stage}　旋轉 +${fnum(r.laps, 0)}${r.found ? `<br>新道具 ${r.found}種` : ''}${r.flux ? `<br>倍速時間 +${Math.floor(r.flux / 60)}分鐘` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? '再領取一次份' : '看廣告獲得2倍'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('放置獎勵2倍！', `關卡 +${r2.stage}`); } else this.toast('無法載入廣告', '請檢查網路狀態或廣告攔截器（如 AdGuard）'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('放置獎勵2倍！', `關卡 +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('偵測到廣告攔截器', '不看廣告就無法領取獎勵。請關閉廣告攔截器。');
+    else if (why === 'noad') this.toast('目前沒有廣告', '請稍等一下再試一次。');
+    else if (why === 'dismissed') this.toast('看完廣告才能領取獎勵');
+    else this.toast('無法載入廣告', '請檢查網路狀態或廣告攔截器（如 AdGuard）');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ export class UI {
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('已領取獎勵', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('無法載入廣告', '請檢查網路狀態或廣告攔截器（如 AdGuard）');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');

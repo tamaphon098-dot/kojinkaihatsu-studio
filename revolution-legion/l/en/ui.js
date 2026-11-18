@@ -565,7 +565,15 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Test: time ×${s.timeS
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">Welcome back!</div><h3>${h} hr ${m} min</h3><p>The Rings kept spinning while you were away (efficiency${Math.round(r.eff * 100)}%)<br>Stage +${r.stage}  Laps +${fnum(r.laps, 0)}${r.found ? `<br>New items ${r.found} found` : ''}${r.flux ? `<br>2x Time +${Math.floor(r.flux / 60)} min` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? 'Claim another one' : 'Watch an ad to double it'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('Idle reward doubled!', `Stage +${r2.stage}`); } else this.toast('Couldn\'t load the ad', 'Check your connection or ad blocker (AdGuard, etc.)'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('Idle reward doubled!', `Stage +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('Ad blocker detected', 'Rewards need a watched ad. Please turn off your ad blocker.');
+    else if (why === 'noad') this.toast('No ads right now', 'Please wait a little and try again.');
+    else if (why === 'dismissed') this.toast('Watch to the end to get the reward');
+    else this.toast('Couldn\'t load the ad', 'Check your connection or ad blocker (AdGuard, etc.)');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Test: time ×${s.timeS
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('Bonus claimed', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('Couldn\'t load the ad', 'Check your connection or ad blocker (AdGuard, etc.)');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');

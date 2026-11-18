@@ -59,6 +59,7 @@ export class Monetize {
 
   // Rewarded ad. Resolves true only when the reward was earned.
   async showRewarded() {
+    this.lastAdFail = '';
     if (this.web) return this.webRewarded();
     if (!this.native) return this.ui.fakeAd();
     try {
@@ -70,23 +71,34 @@ export class Monetize {
   }
 
   // Browser: Google AdSense H5 games rewarded ad (adBreak). The script is added only to the public web build.
-  // If no ad can be shown (not approved yet, ad blocker, no fill) the bonus is still given.
+  // Reward ONLY when an ad was actually watched (some blockers swap in a stub script that answers "no ad",
+  // so "no ad available" can not be trusted either). lastAdFail tells the UI why: 'blocked' | 'noad' | 'dismissed'.
   webRewarded() {
-    if (typeof window.adBreak !== 'function') return Promise.resolve(true);
+    this.lastAdFail = '';
+    const blocked = () => { this.lastAdFail = 'blocked'; return false; };
+    if (typeof window.adBreak !== 'function' || window.__adsBlocked) return Promise.resolve(blocked());
     const bgm = this.ui.hooks.bgm && this.ui.hooks.bgm();
     return new Promise((res) => {
-      let started = false, done = false;
+      let started = false, answered = false, done = false;
       const finish = (v) => { if (!done) { done = true; res(v); } };
-      setTimeout(() => { if (!started) finish(true); }, 5000);
+      // nothing came back at all: the real script always calls adBreakDone, a blocker's stub never does
+      setTimeout(() => { if (!started && !answered) finish(blocked()); }, 8000);
       window.adBreak({
         type: 'reward',
         name: 'rl_bonus',
         beforeAd: () => { if (bgm) bgm.pause(); },
         afterAd: () => { if (bgm) bgm.resume(); },
         beforeReward: (showAdFn) => { started = true; showAdFn(); },
-        adDismissed: () => finish(false),
+        adDismissed: () => { this.lastAdFail = 'dismissed'; finish(false); },
         adViewed: () => finish(true),
-        adBreakDone: () => finish(true),
+        adBreakDone: (info) => {
+          answered = true;
+          const st = (info && info.breakStatus) || '';
+          if (st === 'viewed') return finish(true);
+          if (st === 'dismissed') { this.lastAdFail = 'dismissed'; return finish(false); }
+          if (window.__adsOk && ['notReady', 'frequencyCapped', 'noAdPreloaded', 'timeout'].includes(st)) { this.lastAdFail = 'noad'; return finish(false); }
+          finish(blocked());
+        },
       });
     });
   }

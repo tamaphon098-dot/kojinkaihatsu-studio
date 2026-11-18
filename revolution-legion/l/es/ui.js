@@ -565,7 +565,15 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Prueba: tiempo ×${s.t
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">¡Bienvenido de vuelta!</div><h3>${h} h ${m} min</h3><p>Los anillos siguieron girando (eficiencia ${Math.round(r.eff * 100)}%)<br>Etapa +${r.stage}  Vueltas +${fnum(r.laps, 0)}${r.found ? `<br>Tipos de objetos nuevos: ${r.found}` : ''}${r.flux ? `<br>Tiempo x2 +${Math.floor(r.flux / 60)} min` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? 'Recibir una vez más' : 'Ver anuncio y duplicar'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('¡Recompensa de ausencia duplicada!', `Etapa +${r2.stage}`); } else this.toast('No se pudo cargar el anuncio', 'Revisa tu conexión o tu bloqueador de anuncios (como AdGuard)'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('¡Recompensa de ausencia duplicada!', `Etapa +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('Bloqueador de anuncios activado', 'Para recibir la recompensa hay que ver el anuncio. Desactiva el bloqueador.');
+    else if (why === 'noad') this.toast('Ahora no hay anuncios', 'Espera un poco y vuelve a intentarlo.');
+    else if (why === 'dismissed') this.toast('Míralo hasta el final para recibir la recompensa');
+    else this.toast('No se pudo cargar el anuncio', 'Revisa tu conexión o tu bloqueador de anuncios (como AdGuard)');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Prueba: tiempo ×${s.t
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('Bono recibido', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('No se pudo cargar el anuncio', 'Revisa tu conexión o tu bloqueador de anuncios (como AdGuard)');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');

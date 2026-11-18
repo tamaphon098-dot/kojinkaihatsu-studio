@@ -565,7 +565,15 @@ export class UI {
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">おかえり！</div><h3>${h}時間${m}分</h3><p>そのあいだもリングは回っていた（効率${Math.round(r.eff * 100)}%）<br>ステージ +${r.stage}　回転 +${fnum(r.laps, 0)}${r.found ? `<br>新アイテム ${r.found}種` : ''}${r.flux ? `<br>倍速タイム +${Math.floor(r.flux / 60)}分` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? 'もう1回ぶん受け取る' : '広告を見て2倍にする'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('放置報酬2倍！', `ステージ +${r2.stage}`); } else this.toast('広告を読み込めなかった', '通信状態か、広告ブロッカー（AdGuardなど）を確認してね'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('放置報酬2倍！', `ステージ +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('広告ブロッカーが有効です', '広告を見ないと報酬は受け取れない。ブロッカーをオフにしてね');
+    else if (why === 'noad') this.toast('今は広告がありません', '少し時間をおいてもう一度試してね');
+    else if (why === 'dismissed') this.toast('最後まで見ると報酬がもらえる');
+    else this.toast('広告を読み込めなかった', '通信状態か、広告ブロッカー（AdGuardなど）を確認してね');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ export class UI {
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('ボーナスを受け取った', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('広告を読み込めなかった', '通信状態か、広告ブロッカー（AdGuardなど）を確認してね');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');

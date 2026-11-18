@@ -565,7 +565,15 @@ export class UI {
   offline(r) {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">어서 와!</div><h3>${h}시간${m}분</h3><p>그동안에도 링은 돌고 있었다(효율${Math.round(r.eff * 100)}%)<br>스테이지 +${r.stage}　회전 +${fnum(r.laps, 0)}${r.found ? `<br>새 아이템 ${r.found}종` : ''}${r.flux ? `<br>2배속 타임 +${Math.floor(r.flux / 60)}분` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? '한 번 더 받기' : '광고 보고 2배로 받기'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
-    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('방치 보상 2배!', `스테이지 +${r2.stage}`); } else this.toast('광고를 불러오지 못했다', '통신 상태나 광고 차단기(AdGuard 등)를 확인해 줘'); }); };
+    this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('방치 보상 2배!', `스테이지 +${r2.stage}`); } else this.adFailToast(); }); };
+  }
+  // why a rewarded ad gave nothing (browser: ad blocker / no ad right now; app: load failure)
+  adFailToast() {
+    const why = (this.hooks.monetize && this.hooks.monetize().lastAdFail) || '';
+    if (why === 'blocked') this.toast('광고 차단기가 켜져 있습니다', '광고를 봐야 보상을 받을 수 있어요. 광고 차단기를 꺼 주세요.');
+    else if (why === 'noad') this.toast('지금은 광고가 없습니다', '잠시 후 다시 시도해 주세요.');
+    else if (why === 'dismissed') this.toast('끝까지 보면 보상을 받을 수 있어요');
+    else this.toast('광고를 불러오지 못했다', '통신 상태나 광고 차단기(AdGuard 등)를 확인해 줘');
   }
   // ---------------- story ----------------
   // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
@@ -707,7 +715,7 @@ export class UI {
       this.close();
       const ok = s.noAds ? true : await m.showRewarded();
       if (ok && g.adReward(id, today)) this.toast('보너스를 받았다', AD_REWARDS.find((a) => a.id === id).name);
-      else if (!ok) this.toast('광고를 불러오지 못했다', '통신 상태나 광고 차단기(AdGuard 등)를 확인해 줘');
+      else if (!ok) this.adFailToast();
     }));
     box.querySelector('#bHist').addEventListener('click', () => { this.close(); this.purchaseInfo(); });
     const r = box.querySelector('#bRestore');
