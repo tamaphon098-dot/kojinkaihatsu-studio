@@ -214,7 +214,7 @@ export const PERM = [
   { id: 'node', name: 'Multi-Node', text: 'All Rings\' trigger nodes +1', max: 2, cost: (l) => 10 + l * 25 },
   { id: 'autoAsc', name: 'Auto-Ascension', text: 'Auto-Ascend at max Lv', max: 1, cost: () => 8 },
   { id: 'start', name: 'Accelerated Spacetime', text: 'Start from Stage +10 after Rebirth', max: 10, cost: (l) => 6 + l * 4 },
-  { id: 'offline', name: 'Dream Spin', text: 'Offline efficiency +20%', max: 3, cost: (l) => 4 + l * 6 },
+  { id: 'offline', name: 'Dream Spin', text: 'Offline efficiency +10%', max: 3, cost: (l) => 4 + l * 6 },
   { id: 'autoRb', name: 'Auto-Rebirth', text: 'Rebirth once the multiplier hits your target', max: 1, cost: () => 25 },
 ];
 
@@ -392,7 +392,7 @@ export const ZODIAC = [
   { id: 'z1', name: 'Aries', text: 'Red Ring power ×1e8', need: 5 },
   { id: 'z2', name: 'Taurus', text: 'Gold ×1e5', need: 10 },
   { id: 'z3', name: 'Gemini', text: 'All Rings\' trigger nodes +1', need: 15 },
-  { id: 'z4', name: 'Cancer', text: 'Offline efficiency +30%', need: 20 },
+  { id: 'z4', name: 'Cancer', text: 'Offline efficiency +10%', need: 20 },
   { id: 'z5', name: 'Leo', text: 'Boss damage ×1e6', need: 25 },
   { id: 'z6', name: 'Virgo', text: 'Item and Ore drops ×2', need: 30 },
   { id: 'z7', name: 'Libra', text: 'Sync window ×2', need: 35 },

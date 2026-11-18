@@ -214,7 +214,7 @@ export const PERM = [
   { id: 'node', name: '다중 노드', text: '전체 링의 발동 노드 +1', max: 2, cost: (l) => 10 + l * 25 },
   { id: 'autoAsc', name: '자동 어센션', text: 'Lv 상한에서 자동 어센션', max: 1, cost: () => 8 },
   { id: 'start', name: '가속의 시공', text: '환생 후 스테이지 +10부터', max: 10, cost: (l) => 6 + l * 4 },
-  { id: 'offline', name: '꿈의 회전', text: '오프라인 효율 +20%', max: 3, cost: (l) => 4 + l * 6 },
+  { id: 'offline', name: '꿈의 회전', text: '오프라인 효율 +10%', max: 3, cost: (l) => 4 + l * 6 },
   { id: 'autoRb', name: '자동 환생', text: '배율이 지정 배수에 도달하면 환생', max: 1, cost: () => 25 },
 ];
 
@@ -392,7 +392,7 @@ export const ZODIAC = [
   { id: 'z1', name: '양자리', text: '빨강 링 위력 ×1e8', need: 5 },
   { id: 'z2', name: '황소자리', text: '골드 ×1e5', need: 10 },
   { id: 'z3', name: '쌍둥이자리', text: '전체 링의 발동 노드 +1', need: 15 },
-  { id: 'z4', name: '게자리', text: '오프라인 효율 +30%', need: 20 },
+  { id: 'z4', name: '게자리', text: '오프라인 효율 +10%', need: 20 },
   { id: 'z5', name: '사자자리', text: '보스 대상 데미지 ×1e6', need: 25 },
   { id: 'z6', name: '처녀자리', text: '아이템과 광석 드롭 ×2', need: 30 },
   { id: 'z7', name: '천칭자리', text: '동기 유예 ×2', need: 35 },

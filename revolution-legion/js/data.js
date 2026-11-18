@@ -214,7 +214,7 @@ export const PERM = [
   { id: 'node', name: '多重ノード', text: '全リングの発動ノード+1', max: 2, cost: (l) => 10 + l * 25 },
   { id: 'autoAsc', name: '自動アセンション', text: 'Lv上限で自動アセンション', max: 1, cost: () => 8 },
   { id: 'start', name: '加速の時空', text: '転生後ステージ+10から', max: 10, cost: (l) => 6 + l * 4 },
-  { id: 'offline', name: '夢の回転', text: 'オフライン効率+20%', max: 3, cost: (l) => 4 + l * 6 },
+  { id: 'offline', name: '夢の回転', text: 'オフライン効率+10%', max: 3, cost: (l) => 4 + l * 6 },
   { id: 'autoRb', name: '自動転生', text: '倍率が指定倍に届いたら転生', max: 1, cost: () => 25 },
 ];
 
@@ -392,7 +392,7 @@ export const ZODIAC = [
   { id: 'z1', name: '牡羊座', text: '赤リング威力×1e8', need: 5 },
   { id: 'z2', name: '牡牛座', text: 'ゴールド×1e5', need: 10 },
   { id: 'z3', name: '双子座', text: '全リングの発動ノード+1', need: 15 },
-  { id: 'z4', name: '蟹座', text: 'オフライン効率+30%', need: 20 },
+  { id: 'z4', name: '蟹座', text: 'オフライン効率+10%', need: 20 },
   { id: 'z5', name: '獅子座', text: 'ボスへのダメージ×1e6', need: 25 },
   { id: 'z6', name: '乙女座', text: 'アイテムと鉱石のドロップ×2', need: 30 },
   { id: 'z7', name: '天秤座', text: '同期の猶予×2', need: 35 },

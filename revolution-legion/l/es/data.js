@@ -214,7 +214,7 @@ export const PERM = [
   { id: 'node', name: 'Nodos múltiples', text: 'Nodos de activación de todos los anillos +1', max: 2, cost: (l) => 10 + l * 25 },
   { id: 'autoAsc', name: 'Ascensión automática', text: 'Ascensión automática al llegar al Lv máximo', max: 1, cost: () => 8 },
   { id: 'start', name: 'Espaciotiempo acelerado', text: 'Empieza en la etapa +10 tras renacer', max: 10, cost: (l) => 6 + l * 4 },
-  { id: 'offline', name: 'Giro de ensueño', text: 'Eficiencia sin conexión +20%', max: 3, cost: (l) => 4 + l * 6 },
+  { id: 'offline', name: 'Giro de ensueño', text: 'Eficiencia sin conexión +10%', max: 3, cost: (l) => 4 + l * 6 },
   { id: 'autoRb', name: 'Renacimiento automático', text: 'Renace al alcanzar el multiplicador indicado', max: 1, cost: () => 25 },
 ];
 
@@ -392,7 +392,7 @@ export const ZODIAC = [
   { id: 'z1', name: 'Aries', text: 'Poder del anillo rojo ×1e8', need: 5 },
   { id: 'z2', name: 'Tauro', text: 'Oro ×1e5', need: 10 },
   { id: 'z3', name: 'Géminis', text: 'Nodos de activación de todos los anillos +1', need: 15 },
-  { id: 'z4', name: 'Cáncer', text: 'Eficiencia sin conexión +30%', need: 20 },
+  { id: 'z4', name: 'Cáncer', text: 'Eficiencia sin conexión +10%', need: 20 },
   { id: 'z5', name: 'Leo', text: 'Daño a jefes ×1e6', need: 25 },
   { id: 'z6', name: 'Virgo', text: 'Drops de objetos y mena ×2', need: 30 },
   { id: 'z7', name: 'Libra', text: 'Margen de sincronía ×2', need: 35 },

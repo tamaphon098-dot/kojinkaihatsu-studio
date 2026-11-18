@@ -214,7 +214,7 @@ export const PERM = [
   { id: 'node', name: '多重节点', text: '全环触发节点+1', max: 2, cost: (l) => 10 + l * 25 },
   { id: 'autoAsc', name: '自动飞升', text: '达到Lv上限时自动飞升', max: 1, cost: () => 8 },
   { id: 'start', name: '加速时空', text: '转生后从关卡+10开始', max: 10, cost: (l) => 6 + l * 4 },
-  { id: 'offline', name: '梦之旋转', text: '离线效率+20%', max: 3, cost: (l) => 4 + l * 6 },
+  { id: 'offline', name: '梦之旋转', text: '离线效率+10%', max: 3, cost: (l) => 4 + l * 6 },
   { id: 'autoRb', name: '自动转生', text: '倍率达到指定倍数时转生', max: 1, cost: () => 25 },
 ];
 
@@ -392,7 +392,7 @@ export const ZODIAC = [
   { id: 'z1', name: '白羊座', text: '红环威力×1e8', need: 5 },
   { id: 'z2', name: '金牛座', text: '金币×1e5', need: 10 },
   { id: 'z3', name: '双子座', text: '全环触发节点+1', need: 15 },
-  { id: 'z4', name: '巨蟹座', text: '离线效率+30%', need: 20 },
+  { id: 'z4', name: '巨蟹座', text: '离线效率+10%', need: 20 },
   { id: 'z5', name: '狮子座', text: '对Boss伤害×1e6', need: 25 },
   { id: 'z6', name: '处女座', text: '道具与矿石掉落×2', need: 30 },
   { id: 'z7', name: '天秤座', text: '同步容错×2', need: 35 },

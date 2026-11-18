@@ -13,7 +13,9 @@ const WAVES = 5;
 const BOSS_TIME = 30;
 const LOG104 = Math.log10(1.04);
 // Global number scale: keeps digits slow early (first hour ~1万) and reaches ∞ (1.8e308) near the end.
-export const CFG = { K: 1 / 6, H: 0.35, G: 0.2, C: 0.2, lapLv: 0.2, lapMode: 'add', lapPromo: 0.15 };
+export const CFG = { K: 1 / 6, H: 0.35, G: 0.2, C: 0.2, lapLv: 0.2, lapMode: 'add', lapPromo: 0.15,
+  // offline (app closed): efficiency = base + perm*Lv (+zodiac), simulated up to capH hours; flux earned per offline second
+  off: { base: 0.2, perm: 0.1, zod: 0.1, capH: 12, flux: 0.2 } };
 export const K = CFG.K;
 export const INF_L = Math.log10(1.7976931348623157e308);
 
@@ -1143,10 +1145,11 @@ export class Game {
 
   // ================= offline =================
   runOffline(seconds) {
-    const eff = 0.5 + 0.2 * this.state.perm.offline + (this.zod('z4') ? 0.3 : 0);
-    let sim = Math.min(seconds, 12 * 3600) * eff;
+    const O = CFG.off;
+    const eff = O.base + O.perm * this.state.perm.offline + (this.zod('z4') ? O.zod : 0);
+    let sim = Math.min(seconds, O.capH * 3600) * eff;
     if (seconds < 60 || sim < 30) return null; // under a minute away: no "welcome back 0h0m" popup
-    const fluxGain = Math.floor(seconds * 0.2 + Math.max(0, seconds - 12 * 3600) * 0.5);
+    const fluxGain = Math.floor(seconds * O.flux + Math.max(0, seconds - O.capH * 3600) * 0.5);
     this.addFlux(fluxGain);
     const before = { stage: this.state.stage, found: this.state.found.length, laps: this.state.stats.laps.reduce((a, b) => a + b, 0) };
     const step = sim > 3600 ? 2 : 1;
