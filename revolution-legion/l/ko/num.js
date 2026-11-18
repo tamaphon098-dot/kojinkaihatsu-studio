@@ -33,7 +33,9 @@ const SHORT = ['', 'K', 'M', 'B', 'T', 'Qa', 'Qi', 'Sx', 'Sp', 'Oc', 'No', 'Dc',
 
 export function fmt(l) {
   if (l === ZERO || !isFinite(l) || l < -9) return l === Infinity ? '∞' : '0';
-  if (l >= INF && !NUMCFG.broken) return '∞';
+  // "∞" only for the true infinity (the Void King's HP is exactly INF). Ordinary numbers past 1.8e308 keep their
+  // e-notation, otherwise mid-game attack / multipliers all read "∞" for days and the game looks broken.
+  if (Math.abs(l - INF) < 1e-9 && !NUMCFG.broken) return '∞';
   if (l < 4) {
     const v = Math.pow(10, l);
     if (v < 10 && Math.abs(v - Math.round(v)) > 1e-6) return v.toFixed(2);

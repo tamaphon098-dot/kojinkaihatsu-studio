@@ -481,3 +481,20 @@ export const UPDATES = [
   { v: '1.0.0', date: 'December 2026', title: 'Release', items: ['12 heroes and 4 Rings', 'Rebirth, Revolution, Transcend, Infinity, Eternity', 'Weekly Raid and Legion Pass', 'Original BGM'] },
 ];
 export const NEXT_CHAPTER = 'Every month we\'ll add new heroes, worlds and Raid rules, bit by bit.';
+
+// ===== story: the swordsman who wanted to become infinitely strong =====
+// prologue = first launch (pages); the rest are one-time chapter cards at each milestone.
+export const STORY = {
+  prologue: [
+    { t: 'The Weakest Swordsman', p: 'Leon was the weakest swordsman in his village.<br>He swung his sword more than anyone, and lost more than anyone.' },
+    { t: 'The Red Ring', p: 'One night, in a ruined shrine, he found a red ring.<br>It whispered:<br>"Spin me. The more you spin, the stronger you become. Without limit."' },
+    { t: 'The Vow', p: 'Leon laughed.<br>"Then I\'ll keep spinning<br>until I am infinitely strong."' },
+    { t: 'The End of the World', p: 'At the end of the world, they say, waits<br>Void King Nebulus, who devours all strength.<br>Only infinite strength can reach him.' },
+  ],
+  rebirth: { t: 'Chapter 1: Rebirth', p: 'Even when he fell, the ring remembered.<br>Every bit of strength made the next step lighter.<br>"I\'ll just spin again, as many times as it takes."' },
+  revolution: { t: 'Chapter 2: Revolution', p: 'His allies\' rings begin to turn with a single will.<br>Spin hard enough, and even the laws of the world will change.' },
+  transcend: { t: 'Chapter 3: Transcend', p: 'When he let go of everything he had built,<br>Leon found himself standing beyond his own limits.' },
+  voidking: { t: 'Final Chapter: The Void King', p: 'The once-weakest swordsman cut down the Void King with infinite strength.<br>The red ring glowed quietly.' },
+  infinity: { t: 'Chapter 4: ∞', p: 'The Void King was gone. But ∞ was not the end.<br>"Not yet. I can still get stronger."<br>Leon sets out for the Endless Corridor.' },
+  trueEnd: { t: 'The End of the Vow', p: '"Until I am infinitely strong."<br>The vow of that night was fulfilled.<br>And still, the ring keeps spinning today.' },
+};

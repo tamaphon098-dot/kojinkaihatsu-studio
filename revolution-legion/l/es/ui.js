@@ -1,5 +1,5 @@
 // DOM UI for v2. Minimal text, pixel styling; the battle screen shows only what you act on.
-import { RINGS, HEROES, RANKS, RARITY, ITEMS, WORLDS, PERM, MISSIONS, FEATURE_INFO, COMBOS, MUTATIONS, TRAITS, CHALLENGES, ACHIEVEMENTS, IP_UP, INF_CH, PROMO, EP_UP, DIL_UP, ORES, TAROT, ZODIAC, SHOP, AD_REWARDS, LEGION, RECRUIT, RAID_RULES, CARDS, RING_SKINS, AGE_BANDS, VERSION, UPDATES, NEXT_CHAPTER } from './data.js';
+import { RINGS, HEROES, RANKS, RARITY, ITEMS, WORLDS, PERM, MISSIONS, FEATURE_INFO, COMBOS, MUTATIONS, TRAITS, CHALLENGES, ACHIEVEMENTS, IP_UP, INF_CH, PROMO, EP_UP, DIL_UP, ORES, TAROT, ZODIAC, SHOP, AD_REWARDS, LEGION, RECRUIT, RAID_RULES, CARDS, RING_SKINS, AGE_BANDS, VERSION, UPDATES, NEXT_CHAPTER, STORY } from './data.js';
 import { fmt, fnum, UNITS } from './num.js';
 import { IMG } from './px.js';
 import { RingView } from './rings.js';
@@ -11,6 +11,16 @@ const $ = (id) => document.getElementById(id);
 // coins are whole numbers on screen: prices round up, the purse rounds down
 const short = (l) => (l < 4 ? String(Math.ceil(Math.pow(10, l) - 1e-9)) : fmt(l));
 const purse = (l) => (l < 4 ? String(Math.max(0, Math.floor(Math.pow(10, l) + 1e-9))) : fmt(l));
+// Set text and shrink the font when a long number (e.g. "2.71e1536") would not fit its box. Re-measures only when the length changes.
+const fitText = (el, t) => {
+  if (!el || el.textContent === t) return;
+  el.textContent = t;
+  if (el._fitLen === t.length) return;
+  el._fitLen = t.length;
+  el.style.fontSize = '';
+  const c = el.clientWidth, w = el.scrollWidth;
+  if (c > 0 && w > c) el.style.fontSize = Math.max(9, Math.floor(parseFloat(getComputedStyle(el).fontSize) * c / w)) + 'px';
+};
 const RANK_TXT = (r) => `<span style="color:${RANKS[r].col}">${RANKS[r].id}</span>`;
 
 export class UI {
@@ -109,8 +119,8 @@ export class UI {
   refresh() {
     const g = this.g, s = g.state;
     if (this.key() !== this.rowKey) this.buildRows();
-    $('gold').textContent = purse(s.gold);
-    $('pm').textContent = '×' + fmt(s.pmL, 1);
+    fitText($('gold'), purse(s.gold));
+    fitText($('pm'), '×' + fmt(s.pmL, 1));
     $('stage').textContent = s.stage;
     $('world').textContent = g.worldDef().name;
 
@@ -141,7 +151,7 @@ export class UI {
     $('btnFlux').classList.toggle('on', !!s.fluxOn);
     { const f = Math.floor(s.flux || 0), h = Math.floor(f / 3600), mm = Math.floor((f % 3600) / 60); $('btnFlux').textContent = `x2 ${h}:${String(mm).padStart(2, '0')}`; }
     $('btnAutoBuy').classList.toggle('on', s.autoBuyOn);
-    $('sDps').textContent = fmt(g.dpsL(), 1);
+    fitText($('sDps'), fmt(g.dpsL(), 1));
     $('sRps').textContent = fnum(g.active().reduce((a, i) => a + g.rps(i), 0), 2);
     $('sSync').textContent = Math.round(g.syncRate() * 100) + '%';
     $('burstBar').style.width = (s.od > 0 ? (s.od / 10) * 100 : s.burst) + '%';
@@ -166,7 +176,7 @@ export class UI {
       const bl = $('bLv' + i);
       bl.classList.toggle('asc', asc);
       $('bLvT' + i).textContent = asc ? 'Ruptura de límite' : 'Lv+';
-      $('bLvC' + i).textContent = asc ? '★+1' : short(g.lvCostL(i));
+      fitText($('bLvC' + i), asc ? '★+1' : short(g.lvCostL(i)));
       bl.disabled = !asc && !g.canLv(i);
       const sp = $('bSp' + i);
       sp.classList.toggle('hide', !g.has('speed'));
@@ -184,7 +194,7 @@ export class UI {
     const g = this.g;
     switch (ev.type) {
       case 'demoEnd': return this.demoEnd();
-      case 'mission': if (ev.mission.id === 'M40') this.trueEnding(); return this.onMission(ev.mission);
+      case 'mission': if (ev.mission.id === 'M40') { this.trueEnding(); this.chapter('trueEnd'); } return this.onMission(ev.mission);
       case 'ascend': {
         const h = HEROES[RINGS[ev.ring].hero];
         if (ev.rankUp) this.modal(`<div class="sub">RANK UP</div><h3>${RANK_TXT(ev.rankUp - 1)} → ${RANK_TXT(ev.rankUp)}</h3>
@@ -194,11 +204,13 @@ export class UI {
         else this.toast('¡Ascensión!', `${RINGS[ev.ring].name} Lv máx. ${g.cap(ev.ring)} • crecimiento del multiplicador +5%`);
         return;
       }
-      case 'drop': this.dropCard(ev); return;
+      case 'drop': if (!ev.maxed || ev.better) this.dropCard(ev); return; // no card for duplicates of a Lv10 item (it would cover the battle forever at high speed)
       case 'bossfail': this.toast('No pudiste derrotar al jefe', 'Recarga fuerzas 45 s y reintenta'); return;
-      case 'rebirth': this.toast(`¡Renacimiento! Multiplicador ×${fmt(g.state.pmL, 1)}`, `Núcleos +${ev.core}`); this.buildRows(); return;
-      case 'clear': if (ev.first) this.ending(); else this.toast('¡Derrotaste al Rey del Vacío!', 'Puedes hacer Infinito desde la pantalla de Renacimiento'); return;
-      case 'infinity': this.toast(`¡Infinito! Puntos de Infinito +${ev.gain}`); this.buildRows(); return;
+      case 'rebirth': this.toast(`¡Renacimiento! Multiplicador ×${fmt(g.state.pmL, 1)}`, `Núcleos +${ev.core}`); this.buildRows(); this.chapter('rebirth'); return;
+      case 'revolution': this.chapter('revolution'); return;
+      case 'transcend': this.chapter('transcend'); return;
+      case 'clear': if (ev.first) { this.ending(); this.chapter('voidking'); } else this.toast('¡Derrotaste al Rey del Vacío!', 'Puedes hacer Infinito desde la pantalla de Renacimiento'); return;
+      case 'infinity': this.toast(`¡Infinito! Puntos de Infinito +${ev.gain}`); this.buildRows(); this.chapter('infinity'); return;
       case 'infChStart': this.toast(`Desafío del Infinito «${INF_CH.find((c) => c.id === ev.id).name}» iniciado`, INF_CH.find((c) => c.id === ev.id).rule); this.show('battle'); return;
       case 'infChClear': { const c = INF_CH.find((x) => x.id === ev.id); this.modal(`<div class="sub">INFINITY CHALLENGE</div><h3>${c.name}</h3><p>Recompensa permanente: <span style="color:var(--lemon)">${c.reward}</span></p><div class="btns"><button class="btn" data-x>OK</button></div>`); return; }
       case 'unit': this.unitStamp(ev.u); return;
@@ -514,6 +526,7 @@ ${s.perm.autoRb ? `<div class="tog"><span>Renacer auto al subir el multiplicador
       <button class="btn" id="mLang">Language / Idioma</button>
       <button class="btn" id="mCodeOut">Crear código de transferencia</button>
       <button class="btn" id="mCodeIn">Introducir código</button>
+      <button class="btn" id="mStory">Leer la historia</button>
       <button class="btn" id="mNews">Novedades (v${VERSION})</button>
       <button class="btn" id="mBgm">Música: ${this.hooks.bgm && this.hooks.bgm().on ? 'ON' : 'OFF'}</button>
       <button class="btn" id="mEq">Equipo automático: ${s.autoEquipOn ? 'ON' : 'OFF'}</button>
@@ -531,6 +544,7 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Prueba: tiempo ×${s.t
       box.querySelector('#mCodeOut').addEventListener('click', () => { this.close(); this.transferOut(); });
       box.querySelector('#mCodeIn').addEventListener('click', () => { this.close(); this.transferIn(); });
       box.querySelector('#mNews').addEventListener('click', () => { this.close(); this.news(false); });
+      box.querySelector('#mStory').addEventListener('click', () => { this.close(); this.storyLog(); });
       box.querySelector('#mBgm').addEventListener('click', () => { const b = this.hooks.bgm(); b.setOn(!b.on); b.start(); this.close(); this.toast('BGM ' + (b.on ? 'ON' : 'OFF')); });
       box.querySelector('#mEq').addEventListener('click', () => { s.autoEquipOn = !s.autoEquipOn; this.close(); this.toast('Equipo automático ' + (s.autoEquipOn ? 'ON' : 'OFF')); });
       box.querySelector('#mFx').addEventListener('click', () => { s.fxLow = !s.fxLow; document.getElementById('app').classList.toggle('fxlow', s.fxLow); this.close(); });
@@ -552,6 +566,39 @@ ${this.hooks.debug ? `<button class="btn blue" id="mFast">Prueba: tiempo ×${s.t
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">¡Bienvenido de vuelta!</div><h3>${h} h ${m} min</h3><p>Los anillos siguieron girando (eficiencia ${Math.round(r.eff * 100)}%)<br>Etapa +${r.stage}  Vueltas +${fnum(r.laps, 0)}${r.found ? `<br>Tipos de objetos nuevos: ${r.found}` : ''}${r.flux ? `<br>Tiempo x2 +${Math.floor(r.flux / 60)} min` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? 'Recibir una vez más' : 'Ver anuncio y duplicar'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
     this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('¡Recompensa de ausencia duplicada!', `Etapa +${r2.stage}`); } else this.toast('No se pudo cargar el anuncio', 'Revisa tu conexión o tu bloqueador de anuncios (como AdGuard)'); }); };
+  }
+  // ---------------- story ----------------
+  // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
+  storyPages(pages, sub) {
+    let k = 0;
+    const page = () => `<h3>${pages[k].t}</h3><p class="story">${pages[k].p}</p><p class="note">${k + 1} / ${pages.length}</p>`;
+    this.modal(`<div class="sub">${sub}</div><img class="pic" src="px/por_leon.png" width="120" height="120"><div id="stPage">${page()}</div>
+      <div class="btns"><button class="btn" id="stNext">Siguiente</button><button class="btn red" data-x>Saltar</button></div>`);
+    this.onOpen = (box) => {
+      const next = box.querySelector('#stNext');
+      if (pages.length === 1) next.textContent = 'Cerrar';
+      next.addEventListener('click', () => {
+        if (k >= pages.length - 1) { this.close(); return; }
+        k++;
+        box.querySelector('#stPage').innerHTML = page();
+        if (k === pages.length - 1) next.textContent = sub === 'PROLOGUE' ? 'Empezar' : 'Cerrar';
+      });
+    };
+  }
+  prologue() { this.storyPages(STORY.prologue, 'PROLOGUE'); }
+  // one-time chapter card at a milestone (rebirth / revolution / transcend / infinity)
+  chapter(key) {
+    const s = this.g.state;
+    s.story = s.story || [];
+    if (s.story.includes(key) || !STORY[key]) return;
+    s.story.push(key);
+    const c = STORY[key];
+    this.modal(`<div class="sub">STORY</div><h3>${c.t}</h3><img class="pic" src="px/por_leon.png" width="120" height="120"><p class="story">${c.p}</p><div class="btns"><button class="btn" data-x>OK</button></div>`);
+  }
+  // menu: re-read the prologue and every chapter seen so far
+  storyLog() {
+    const s = this.g.state, seen = (s.story || []).filter((k) => STORY[k]);
+    this.storyPages([...STORY.prologue, ...seen.map((k) => STORY[k])], 'STORY');
   }
   intro() {
     this.modal(`<div class="sub">REVOLUTION LEGION</div><h3>Gira, Legión</h3><img class="pic" src="px/por_leon.png" width="120" height="120">

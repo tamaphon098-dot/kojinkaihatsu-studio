@@ -184,10 +184,12 @@ async function start() {
     onScreen: (s) => { if (s === 'battle') setTimeout(layout, 0); },
   });
   if (saved) {
+    // story chapters for milestones this save already passed count as seen (no out-of-order chapter cards)
+    { const st = game.state; st.story = st.story || []; const past = { rebirth: st.stats.rebirths > 0, revolution: (st.stats.revolutions || 0) > 0, transcend: (st.stats.transcends || 0) > 0 || st.transcends > 0, voidking: !!st.stats.cleared, infinity: st.inf && st.inf.count > 0, trueEnd: st.missions.includes('M40') }; for (const k in past) if (past[k] && !st.story.includes(k)) st.story.push(k); }
     const off = game.runOffline((Date.now() - (saved.lastSave || Date.now())) / 1000);
     if (off) ui.offline(off);
     if (game.state.seenVersion) ui.news(true); else game.state.seenVersion = VERSION_STR;
-  } else { ui.intro(); game.state.seenVersion = VERSION_STR; }
+  } else { ui.prologue(); ui.intro(); game.state.seenVersion = VERSION_STR; }
   if (DEBUG) window.ui = ui;
   tut = new Tutorial(game, app);
   tut.onDone = (done) => ui.toast(done ? '教學完成！' : '跳過教學', '接下來自由發揮。放置也能前進');

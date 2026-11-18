@@ -13,7 +13,7 @@ const WAVES = 5;
 const BOSS_TIME = 30;
 const LOG104 = Math.log10(1.04);
 // Global number scale: keeps digits slow early (first hour ~1万) and reaches ∞ (1.8e308) near the end.
-export const CFG = { K: 1 / 6, H: 0.35, G: 0.2, C: 0.2, lapLv: 0.2 };
+export const CFG = { K: 1 / 6, H: 0.35, G: 0.2, C: 0.2, lapLv: 0.2, lapMode: 'add', lapPromo: 0.15 };
 export const K = CFG.K;
 export const INF_L = Math.log10(1.7976931348623157e308);
 
@@ -42,7 +42,7 @@ export function newState() {
     ores: { cu: 0, ag: 0, au: 0, star: 0, black: 0 }, refine: {}, tarotSeen: [], buffs: {}, tarotPerm: { pow: 0, lap: 0, devil: 0 }, zodiac: [], zslots: 3, codes: [],
     rules: { revStage: 350, autoTr: true, infGain: 0, eterStage: 0, autoPromo: false },
     owned: [], noAds: false, supporter: false, ads: { day: '', used: {} },
-    autoEquipOn: false, unseenItems: 0,
+    autoEquipOn: false, unseenItems: 0, story: [],
     lineup: ['leon', 'seris', 'elia', 'nox'], recruits: ['leon', 'seris', 'elia', 'nox'], cards: {}, deck: [], cslots: 3,
     raid: { week: '', weekTier: 0, best: 0, tokens: 0, tokensTotal: 0, goldWeeks: 0, weeks: 0, rainbow: 0 }, streak: 0,
   };
@@ -113,12 +113,17 @@ export class Game {
   cap(i) { const a = this.state.rings[i].asc; return a === 0 ? 30 : 50 + 25 * a; }
   spdCap(i) { return this.has('speed') ? Math.min(40, 10 + 2 * this.state.rings[i].asc) : 0; }
 
+  // Lap multiplier growth per lap. The everyday bonuses (ascension, perm "gain", memory, promotions) ADD together:
+  // multiplying them made the per-lap growth explode mid-game (x1.3-1.5 per lap -> one run cleared a whole world).
+  // Late-layer unlocks (infinity / eternity / dilation / mutation / world law) still multiply, so they keep their punch.
   lapGainL(i) {
     const s = this.state, r = s.rings[i];
-    let g = 0.01 * (1 + 0.05 * Math.min(r.asc, 20)) * (1 + 0.1 * s.perm.gain) * (1 + 0.2 * s.memory) * this.worldDef().lapGain;
+    let g;
+    if (CFG.lapMode === 'old') g = 0.01 * (1 + 0.05 * Math.min(r.asc, 20)) * (1 + 0.1 * s.perm.gain) * (1 + 0.2 * s.memory) * (1 + 0.15 * ((s.promo || [])[i] || 0)) * this.worldDef().lapGain;
+    else g = 0.01 * (1 + 0.05 * Math.min(r.asc, 20) + 0.1 * s.perm.gain + 0.2 * s.memory + CFG.lapPromo * ((s.promo || [])[i] || 0)) * this.worldDef().lapGain;
     if (this.hasMut(i, 'reverse')) g *= 1.6;
     if (this.ipHas('gain')) g *= 1.5;
-    g *= (1 + 0.15 * ((s.promo || [])[i] || 0)) * (this.epHas('lapx') ? 2 : 1) * (1 + 0.25 * this.dl('d_lap')) * (1 + 0.02 * ((s.tarotPerm || {}).lap || 0)) * (this.zod('z11') ? 1.1 : 1) * (this.buff('t2') ? 2 : 1) * (i === 1 && this.heroId(1) === 'luna' ? 1.1 : 1);
+    g *= (this.epHas('lapx') ? 2 : 1) * (1 + 0.25 * this.dl('d_lap')) * (1 + 0.02 * ((s.tarotPerm || {}).lap || 0)) * (this.zod('z11') ? 1.1 : 1) * (this.buff('t2') ? 2 : 1) * (i === 1 && this.heroId(1) === 'luna' ? 1.1 : 1);
     return Math.log10(1 + g);
   }
 
@@ -384,7 +389,8 @@ export class Game {
     const before = this.itemMultL(s.equip[hid]), after = this.itemMultL(it.id);
     const better = s.equip[hid] !== it.id && after > before + 1e-9;
     if (s.autoEquipOn) this.autoEquip();
-    this.emit({ type: 'drop', item: it, isNew, better: better && !s.autoEquipOn, hid, before, after, lv: this.itemLevel(it.id) });
+    // maxed: this copy was a duplicate of an item already at Lv10, so nothing changed for the player
+    this.emit({ type: 'drop', item: it, isNew, better: better && !s.autoEquipOn, hid, before, after, lv: this.itemLevel(it.id), maxed: s.items[it.id] > 10 });
   }
 
   rollOre(boss) {
@@ -1139,7 +1145,7 @@ export class Game {
   runOffline(seconds) {
     const eff = 0.5 + 0.2 * this.state.perm.offline + (this.zod('z4') ? 0.3 : 0);
     let sim = Math.min(seconds, 12 * 3600) * eff;
-    if (sim < 30) return null;
+    if (seconds < 60 || sim < 30) return null; // under a minute away: no "welcome back 0h0m" popup
     const fluxGain = Math.floor(seconds * 0.2 + Math.max(0, seconds - 12 * 3600) * 0.5);
     this.addFlux(fluxGain);
     const before = { stage: this.state.stage, found: this.state.found.length, laps: this.state.stats.laps.reduce((a, b) => a + b, 0) };

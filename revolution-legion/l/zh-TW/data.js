@@ -481,3 +481,20 @@ export const UPDATES = [
   { v: '1.0.0', date: '2026年12月', title: '發售', items: ['12位英雄與4種圓環', '轉生·革命·超越·無限·永劫', '每週突襲與軍團通行證', '原創BGM'] },
 ];
 export const NEXT_CHAPTER = '今後每月將陸續追加新英雄、世界與突襲規則。';
+
+// ===== story: the swordsman who wanted to become infinitely strong =====
+// prologue = first launch (pages); the rest are one-time chapter cards at each milestone.
+export const STORY = {
+  prologue: [
+    { t: '最弱的劍士', p: '劍士雷恩是村裡最弱的人。<br>他揮劍比誰都多，也輸得比誰都多。' },
+    { t: '紅色圓環', p: '某個夜晚，他在倒塌的祠堂撿到一枚紅色圓環。<br>圓環低語：<br>「轉動吧。轉得越多，你就越強。永無止境。」' },
+    { t: '誓言', p: '雷恩笑了。<br>「那我就一直轉下去，<br>直到變得無限強大。」' },
+    { t: '世界的盡頭', p: '傳說在世界的盡頭，<br>有吞噬一切力量的虛無王涅布拉斯。<br>能觸及他的，只有∞的力量。' },
+  ],
+  rebirth: { t: '第一章　轉生', p: '即使倒下，圓環也記得一切。<br>變強多少，下一步就輕盈多少。<br>「不管幾次，再轉就好。」' },
+  revolution: { t: '第二章　革命', p: '夥伴們的圓環，以同一個意志轉動起來。<br>只要轉動，連世界的法則都能改變。' },
+  transcend: { t: '第三章　超越', p: '當他放下累積的一切時，<br>雷恩已站在自身極限的另一端。' },
+  voidking: { t: '終章　虛無王', p: '曾經最弱的劍士，以∞的力量斬斷了虛無王。<br>紅色圓環靜靜地發著光。' },
+  infinity: { t: '第四章　∞', p: '虛無王消失了。但∞並不是終點。<br>「還沒完。我還能更強。」<br>雷恩邁向無限迴廊。' },
+  trueEnd: { t: '誓言的盡頭', p: '「直到變得無限強大。」<br>那一夜的誓言，已經實現。<br>即便如此，圓環今天依然轉動著。' },
+};

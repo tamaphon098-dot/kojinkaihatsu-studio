@@ -481,3 +481,20 @@ export const UPDATES = [
   { v: '1.0.0', date: 'Diciembre de 2026', title: 'Lanzamiento', items: ['12 héroes y 4 anillos', 'Renacimiento, Revolución, Trascendencia, Infinito y Eternidad', 'Incursión semanal y Pase de Legión', 'Música original'] },
 ];
 export const NEXT_CHAPTER = 'Cada mes añadiremos poco a poco nuevos héroes, mundos y reglas de Incursión.';
+
+// ===== story: the swordsman who wanted to become infinitely strong =====
+// prologue = first launch (pages); the rest are one-time chapter cards at each milestone.
+export const STORY = {
+  prologue: [
+    { t: 'El espadachín más débil', p: 'Leon era el espadachín más débil de su aldea.<br>Entrenaba más que nadie y perdía más que nadie.' },
+    { t: 'El anillo rojo', p: 'Una noche, en un santuario en ruinas, encontró un anillo rojo.<br>El anillo susurró:<br>«Hazme girar. Cuanto más gires, más fuerte serás. Sin límite».' },
+    { t: 'El juramento', p: 'Leon sonrió.<br>«Entonces no pararé de girar<br>hasta ser infinitamente fuerte».' },
+    { t: 'El fin del mundo', p: 'Dicen que en el fin del mundo aguarda<br>el Rey del Vacío Nebulus, que devora toda fuerza.<br>Solo una fuerza ∞ puede alcanzarlo.' },
+  ],
+  rebirth: { t: 'Capítulo 1: Renacimiento', p: 'Aunque cayera, el anillo lo recordaba todo.<br>Cada poco de fuerza hacía más ligero el siguiente paso.<br>«Giraré otra vez, las veces que haga falta».' },
+  revolution: { t: 'Capítulo 2: Revolución', p: 'Los anillos de sus aliados giran con una sola voluntad.<br>Si giras lo suficiente, hasta las leyes del mundo cambian.' },
+  transcend: { t: 'Capítulo 3: Trascendencia', p: 'Al soltar todo lo que había construido,<br>Leon se encontró más allá de sus propios límites.' },
+  voidking: { t: 'Capítulo final: El Rey del Vacío', p: 'El que fue el espadachín más débil derribó al Rey del Vacío con una fuerza ∞.<br>El anillo rojo brilló en silencio.' },
+  infinity: { t: 'Capítulo 4: ∞', p: 'El Rey del Vacío desapareció. Pero ∞ no era el final.<br>«Todavía no. Aún puedo ser más fuerte».<br>Leon parte hacia el Corredor Infinito.' },
+  trueEnd: { t: 'El fin del juramento', p: '«Hasta ser infinitamente fuerte».<br>El juramento de aquella noche se cumplió.<br>Y aun así, el anillo sigue girando hoy.' },
+};

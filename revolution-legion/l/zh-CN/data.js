@@ -481,3 +481,20 @@ export const UPDATES = [
   { v: '1.0.0', date: '2026年12月', title: '发售', items: ['12位英雄与4种环', '转生·革命·超越·无限·永劫', '每周突袭与军团通行证', '原创BGM'] },
 ];
 export const NEXT_CHAPTER = '每月都会陆续追加新的英雄、世界和突袭规则。';
+
+// ===== story: the swordsman who wanted to become infinitely strong =====
+// prologue = first launch (pages); the rest are one-time chapter cards at each milestone.
+export const STORY = {
+  prologue: [
+    { t: '最弱的剑士', p: '剑士莱昂是村里最弱的人。<br>他挥剑比谁都多，也输得比谁都多。' },
+    { t: '红色圆环', p: '某天夜里，他在倒塌的祠堂捡到一枚红色圆环。<br>圆环低语：<br>“转动吧。转得越多，你就越强。永无止境。”' },
+    { t: '誓言', p: '莱昂笑了。<br>“那我就一直转下去，<br>直到变得无限强大。”' },
+    { t: '世界的尽头', p: '传说在世界的尽头，<br>有吞噬一切力量的虚无王涅布拉斯。<br>能触及他的，只有∞的力量。' },
+  ],
+  rebirth: { t: '第一章　转生', p: '即使倒下，圆环也记得一切。<br>变强多少，下一步就轻盈多少。<br>“不管多少次，再转就好。”' },
+  revolution: { t: '第二章　革命', p: '伙伴们的圆环，以同一个意志转动起来。<br>只要转动，连世界的法则都能改变。' },
+  transcend: { t: '第三章　超越', p: '当他放下积累的一切时，<br>莱昂已站在自身极限的另一端。' },
+  voidking: { t: '终章　虚无王', p: '曾经最弱的剑士，以∞的力量斩断了虚无王。<br>红色圆环静静地发着光。' },
+  infinity: { t: '第四章　∞', p: '虚无王消失了。但∞并不是终点。<br>“还没完。我还能更强。”<br>莱昂迈向无尽回廊。' },
+  trueEnd: { t: '誓言的尽头', p: '“直到变得无限强大。”<br>那一夜的誓言，已经实现。<br>即便如此，圆环今天依然转动着。' },
+};

@@ -1,5 +1,5 @@
 // DOM UI for v2. Minimal text, pixel styling; the battle screen shows only what you act on.
-import { RINGS, HEROES, RANKS, RARITY, ITEMS, WORLDS, PERM, MISSIONS, FEATURE_INFO, COMBOS, MUTATIONS, TRAITS, CHALLENGES, ACHIEVEMENTS, IP_UP, INF_CH, PROMO, EP_UP, DIL_UP, ORES, TAROT, ZODIAC, SHOP, AD_REWARDS, LEGION, RECRUIT, RAID_RULES, CARDS, RING_SKINS, AGE_BANDS, VERSION, UPDATES, NEXT_CHAPTER } from './data.js';
+import { RINGS, HEROES, RANKS, RARITY, ITEMS, WORLDS, PERM, MISSIONS, FEATURE_INFO, COMBOS, MUTATIONS, TRAITS, CHALLENGES, ACHIEVEMENTS, IP_UP, INF_CH, PROMO, EP_UP, DIL_UP, ORES, TAROT, ZODIAC, SHOP, AD_REWARDS, LEGION, RECRUIT, RAID_RULES, CARDS, RING_SKINS, AGE_BANDS, VERSION, UPDATES, NEXT_CHAPTER, STORY } from './data.js';
 import { fmt, fnum, UNITS } from './num.js';
 import { IMG } from './px.js';
 import { RingView } from './rings.js';
@@ -11,6 +11,16 @@ const $ = (id) => document.getElementById(id);
 // coins are whole numbers on screen: prices round up, the purse rounds down
 const short = (l) => (l < 4 ? String(Math.ceil(Math.pow(10, l) - 1e-9)) : fmt(l));
 const purse = (l) => (l < 4 ? String(Math.max(0, Math.floor(Math.pow(10, l) + 1e-9))) : fmt(l));
+// Set text and shrink the font when a long number (e.g. "2.71e1536") would not fit its box. Re-measures only when the length changes.
+const fitText = (el, t) => {
+  if (!el || el.textContent === t) return;
+  el.textContent = t;
+  if (el._fitLen === t.length) return;
+  el._fitLen = t.length;
+  el.style.fontSize = '';
+  const c = el.clientWidth, w = el.scrollWidth;
+  if (c > 0 && w > c) el.style.fontSize = Math.max(9, Math.floor(parseFloat(getComputedStyle(el).fontSize) * c / w)) + 'px';
+};
 const RANK_TXT = (r) => `<span style="color:${RANKS[r].col}">${RANKS[r].id}</span>`;
 
 export class UI {
@@ -109,8 +119,8 @@ export class UI {
   refresh() {
     const g = this.g, s = g.state;
     if (this.key() !== this.rowKey) this.buildRows();
-    $('gold').textContent = purse(s.gold);
-    $('pm').textContent = '×' + fmt(s.pmL, 1);
+    fitText($('gold'), purse(s.gold));
+    fitText($('pm'), '×' + fmt(s.pmL, 1));
     $('stage').textContent = s.stage;
     $('world').textContent = g.worldDef().name;
 
@@ -141,7 +151,7 @@ export class UI {
     $('btnFlux').classList.toggle('on', !!s.fluxOn);
     { const f = Math.floor(s.flux || 0), h = Math.floor(f / 3600), mm = Math.floor((f % 3600) / 60); $('btnFlux').textContent = `2배속 ${h}:${String(mm).padStart(2, '0')}`; }
     $('btnAutoBuy').classList.toggle('on', s.autoBuyOn);
-    $('sDps').textContent = fmt(g.dpsL(), 1);
+    fitText($('sDps'), fmt(g.dpsL(), 1));
     $('sRps').textContent = fnum(g.active().reduce((a, i) => a + g.rps(i), 0), 2);
     $('sSync').textContent = Math.round(g.syncRate() * 100) + '%';
     $('burstBar').style.width = (s.od > 0 ? (s.od / 10) * 100 : s.burst) + '%';
@@ -166,7 +176,7 @@ export class UI {
       const bl = $('bLv' + i);
       bl.classList.toggle('asc', asc);
       $('bLvT' + i).textContent = asc ? '상한 돌파' : 'Lv+';
-      $('bLvC' + i).textContent = asc ? '★+1' : short(g.lvCostL(i));
+      fitText($('bLvC' + i), asc ? '★+1' : short(g.lvCostL(i)));
       bl.disabled = !asc && !g.canLv(i);
       const sp = $('bSp' + i);
       sp.classList.toggle('hide', !g.has('speed'));
@@ -184,7 +194,7 @@ export class UI {
     const g = this.g;
     switch (ev.type) {
       case 'demoEnd': return this.demoEnd();
-      case 'mission': if (ev.mission.id === 'M40') this.trueEnding(); return this.onMission(ev.mission);
+      case 'mission': if (ev.mission.id === 'M40') { this.trueEnding(); this.chapter('trueEnd'); } return this.onMission(ev.mission);
       case 'ascend': {
         const h = HEROES[RINGS[ev.ring].hero];
         if (ev.rankUp) this.modal(`<div class="sub">RANK UP</div><h3>${RANK_TXT(ev.rankUp - 1)} → ${RANK_TXT(ev.rankUp)}</h3>
@@ -194,11 +204,13 @@ export class UI {
         else this.toast('어센션!', `${RINGS[ev.ring].name} 상한 Lv${g.cap(ev.ring)}·배율 증가 +5%`);
         return;
       }
-      case 'drop': this.dropCard(ev); return;
+      case 'drop': if (!ev.maxed || ev.better) this.dropCard(ev); return; // no card for duplicates of a Lv10 item (it would cover the battle forever at high speed)
       case 'bossfail': this.toast('보스를 쓰러뜨리지 못했다', '45초 힘을 모아 재도전'); return;
-      case 'rebirth': this.toast(`환생! 배율 ×${fmt(g.state.pmL, 1)}`, `코어 +${ev.core}`); this.buildRows(); return;
-      case 'clear': if (ev.first) this.ending(); else this.toast('공허왕을 쓰러뜨렸다!', '환생 화면에서 인피니티할 수 있다'); return;
-      case 'infinity': this.toast(`인피니티! 인피니티 포인트+${ev.gain}`); this.buildRows(); return;
+      case 'rebirth': this.toast(`환생! 배율 ×${fmt(g.state.pmL, 1)}`, `코어 +${ev.core}`); this.buildRows(); this.chapter('rebirth'); return;
+      case 'revolution': this.chapter('revolution'); return;
+      case 'transcend': this.chapter('transcend'); return;
+      case 'clear': if (ev.first) { this.ending(); this.chapter('voidking'); } else this.toast('공허왕을 쓰러뜨렸다!', '환생 화면에서 인피니티할 수 있다'); return;
+      case 'infinity': this.toast(`인피니티! 인피니티 포인트+${ev.gain}`); this.buildRows(); this.chapter('infinity'); return;
       case 'infChStart': this.toast(`무한의 시련「${INF_CH.find((c) => c.id === ev.id).name}」 시작`, INF_CH.find((c) => c.id === ev.id).rule); this.show('battle'); return;
       case 'infChClear': { const c = INF_CH.find((x) => x.id === ev.id); this.modal(`<div class="sub">INFINITY CHALLENGE</div><h3>${c.name}</h3><p>영구 보상: <span style="color:var(--lemon)">${c.reward}</span></p><div class="btns"><button class="btn" data-x>OK</button></div>`); return; }
       case 'unit': this.unitStamp(ev.u); return;
@@ -514,6 +526,7 @@ export class UI {
       <button class="btn" id="mLang">Language / 언어</button>
       <button class="btn" id="mCodeOut">인계 코드 만들기</button>
       <button class="btn" id="mCodeIn">인계 코드 입력</button>
+      <button class="btn" id="mStory">이야기 읽기</button>
       <button class="btn" id="mNews">공지(v${VERSION})</button>
       <button class="btn" id="mBgm">BGM:${this.hooks.bgm && this.hooks.bgm().on ? 'ON' : 'OFF'}</button>
       <button class="btn" id="mEq">자동 장착:${s.autoEquipOn ? 'ON' : 'OFF'}</button>
@@ -531,6 +544,7 @@ export class UI {
       box.querySelector('#mCodeOut').addEventListener('click', () => { this.close(); this.transferOut(); });
       box.querySelector('#mCodeIn').addEventListener('click', () => { this.close(); this.transferIn(); });
       box.querySelector('#mNews').addEventListener('click', () => { this.close(); this.news(false); });
+      box.querySelector('#mStory').addEventListener('click', () => { this.close(); this.storyLog(); });
       box.querySelector('#mBgm').addEventListener('click', () => { const b = this.hooks.bgm(); b.setOn(!b.on); b.start(); this.close(); this.toast('BGM ' + (b.on ? 'ON' : 'OFF')); });
       box.querySelector('#mEq').addEventListener('click', () => { s.autoEquipOn = !s.autoEquipOn; this.close(); this.toast('자동 장착 ' + (s.autoEquipOn ? 'ON' : 'OFF')); });
       box.querySelector('#mFx').addEventListener('click', () => { s.fxLow = !s.fxLow; document.getElementById('app').classList.toggle('fxlow', s.fxLow); this.close(); });
@@ -552,6 +566,39 @@ export class UI {
     const h = Math.floor(r.seconds / 3600), m = Math.floor((r.seconds % 3600) / 60);
     this.modal(`<div class="sub">어서 와!</div><h3>${h}시간${m}분</h3><p>그동안에도 링은 돌고 있었다(효율${Math.round(r.eff * 100)}%)<br>스테이지 +${r.stage}　회전 +${fnum(r.laps, 0)}${r.found ? `<br>새 아이템 ${r.found}종` : ''}${r.flux ? `<br>2배속 타임 +${Math.floor(r.flux / 60)}분` : ''}</p><div class="btns">${r.seconds >= 600 ? `<button class="btn blue" id="offAd">${this.g.state.noAds ? '한 번 더 받기' : '광고 보고 2배로 받기'}</button>` : ''}<button class="btn" data-x>OK</button></div>`);
     this.onOpen = (box) => { const b = box.querySelector('#offAd'); if (b) b.addEventListener('click', async () => { this.close(); const ok = this.g.state.noAds ? true : await this.hooks.monetize().showRewarded(); if (ok) { const r2 = this.g.runOffline(r.seconds); if (r2) this.toast('방치 보상 2배!', `스테이지 +${r2.stage}`); } else this.toast('광고를 불러오지 못했다', '통신 상태나 광고 차단기(AdGuard 등)를 확인해 줘'); }); };
+  }
+  // ---------------- story ----------------
+  // pages: [{t, p}] shown one after another in a single dialog ("つぎへ" / "スキップ")
+  storyPages(pages, sub) {
+    let k = 0;
+    const page = () => `<h3>${pages[k].t}</h3><p class="story">${pages[k].p}</p><p class="note">${k + 1} / ${pages.length}</p>`;
+    this.modal(`<div class="sub">${sub}</div><img class="pic" src="px/por_leon.png" width="120" height="120"><div id="stPage">${page()}</div>
+      <div class="btns"><button class="btn" id="stNext">다음</button><button class="btn red" data-x>건너뛰기</button></div>`);
+    this.onOpen = (box) => {
+      const next = box.querySelector('#stNext');
+      if (pages.length === 1) next.textContent = '닫기';
+      next.addEventListener('click', () => {
+        if (k >= pages.length - 1) { this.close(); return; }
+        k++;
+        box.querySelector('#stPage').innerHTML = page();
+        if (k === pages.length - 1) next.textContent = sub === 'PROLOGUE' ? '시작' : '닫기';
+      });
+    };
+  }
+  prologue() { this.storyPages(STORY.prologue, 'PROLOGUE'); }
+  // one-time chapter card at a milestone (rebirth / revolution / transcend / infinity)
+  chapter(key) {
+    const s = this.g.state;
+    s.story = s.story || [];
+    if (s.story.includes(key) || !STORY[key]) return;
+    s.story.push(key);
+    const c = STORY[key];
+    this.modal(`<div class="sub">STORY</div><h3>${c.t}</h3><img class="pic" src="px/por_leon.png" width="120" height="120"><p class="story">${c.p}</p><div class="btns"><button class="btn" data-x>OK</button></div>`);
+  }
+  // menu: re-read the prologue and every chapter seen so far
+  storyLog() {
+    const s = this.g.state, seen = (s.story || []).filter((k) => STORY[k]);
+    this.storyPages([...STORY.prologue, ...seen.map((k) => STORY[k])], 'STORY');
   }
   intro() {
     this.modal(`<div class="sub">REVOLUTION LEGION</div><h3>돌려라, 군단</h3><img class="pic" src="px/por_leon.png" width="120" height="120">

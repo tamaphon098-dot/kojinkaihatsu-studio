@@ -481,3 +481,20 @@ export const UPDATES = [
   { v: '1.0.0', date: 'Dezembro de 2026', title: 'Lançamento', items: ['12 heróis e 4 anéis', 'Renascimento, Revolução, Transcendência, Infinito, Eternidade', 'Reide Semanal e Passe da Legião', 'Trilha sonora original'] },
 ];
 export const NEXT_CHAPTER = 'Todo mês vamos adicionando aos poucos novos heróis, mundos e regras de Reide.';
+
+// ===== story: the swordsman who wanted to become infinitely strong =====
+// prologue = first launch (pages); the rest are one-time chapter cards at each milestone.
+export const STORY = {
+  prologue: [
+    { t: 'O espadachim mais fraco', p: 'Leon era o espadachim mais fraco da vila.<br>Treinava mais que todos e perdia mais que todos.' },
+    { t: 'O anel vermelho', p: 'Certa noite, num santuário em ruínas, ele encontrou um anel vermelho.<br>O anel sussurrou:<br>«Gire-me. Quanto mais girar, mais forte ficará. Sem limite.»' },
+    { t: 'O juramento', p: 'Leon sorriu.<br>«Então vou girar sem parar<br>até ficar infinitamente forte.»' },
+    { t: 'O fim do mundo', p: 'Dizem que no fim do mundo espera<br>Nebulus, Rei do Vazio, que devora toda força.<br>Só uma força ∞ pode alcançá-lo.' },
+  ],
+  rebirth: { t: 'Capítulo 1: Renascimento', p: 'Mesmo quando caía, o anel se lembrava.<br>Cada pouco de força deixava o próximo passo mais leve.<br>«Vou girar de novo, quantas vezes for preciso.»' },
+  revolution: { t: 'Capítulo 2: Revolução', p: 'Os anéis dos aliados giram com uma só vontade.<br>Girando o bastante, até as leis do mundo mudam.' },
+  transcend: { t: 'Capítulo 3: Transcendência', p: 'Ao abrir mão de tudo o que tinha construído,<br>Leon se viu além dos próprios limites.' },
+  voidking: { t: 'Capítulo final: O Rei do Vazio', p: 'O espadachim que era o mais fraco derrubou o Rei do Vazio com uma força ∞.<br>O anel vermelho brilhou em silêncio.' },
+  infinity: { t: 'Capítulo 4: ∞', p: 'O Rei do Vazio sumiu. Mas ∞ não era o fim.<br>«Ainda não. Ainda posso ficar mais forte.»<br>Leon parte rumo ao Corredor Infinito.' },
+  trueEnd: { t: 'O fim do juramento', p: '«Até ficar infinitamente forte.»<br>O juramento daquela noite se cumpriu.<br>E mesmo assim, o anel continua girando hoje.' },
+};
