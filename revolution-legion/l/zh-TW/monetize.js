@@ -4,12 +4,14 @@
 // Before release: replace the AdMob IDs below with your own (AdMob console) and create the product IDs
 // from data.js SHOP in Google Play Console (same IDs, prices as listed).
 import { SHOP } from './data.js';
+import { RELEASE } from './flags.js';
 
-// Google's official public TEST ids (safe to use while developing; ads show "Test Ad").
+// REVOLUTION LEGION in AdMob (KOJINKAIHATSU STUDIO). Development builds always request TEST ads,
+// so the developer's own phone never shows (or clicks) real ads; only the Play Store bundle is live.
 export const ADMOB = {
-  appId: 'ca-app-pub-3940256099942544~3347511713',
-  rewardedId: 'ca-app-pub-3940256099942544/5224354917',
-  testing: true,
+  appId: 'ca-app-pub-2610867211543535~1796006700',
+  rewardedId: 'ca-app-pub-2610867211543535/8842254646',
+  testing: !RELEASE,
 };
 
 const CONSUMABLE = new Set(['rl_flux_s', 'rl_flux_l', 'rl_coin_s', 'rl_coin_l', 'rl_month', 'rl_pass', 'rl_ore_s', 'rl_ore_l', 'rl_ore_m', 'rl_ore_xl', 'rl_flux_xl', 'rl_bundle_3k', 'rl_bundle_5k', 'rl_bundle_10k']);
