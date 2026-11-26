@@ -89,11 +89,12 @@
       for (var ch = 0; ch < b.numberOfChannels; ch++) { var d = b.getChannelData(ch), step = Math.max(1, (d.length / 20000) | 0); for (var i = 0; i < d.length; i += step) { var v = d[i] < 0 ? -d[i] : d[i]; if (v > m) m = v; } }
       return m;
     }
-    try {
+    var dbg = /debug/.test(location.hash + location.search);
+    if (dbg) try {
       var cg = (window.BaseAudioContext || window.AudioContext).prototype, mkGain = cg.createGain;
       cg.createGain = function () { var g = mkGain.apply(this, arguments); if (stat.gains.length < 400) stat.gains.push(g); return g; };
     } catch (e) {}
-    try {
+    if (dbg) try {
       var st = AudioBufferSourceNode.prototype.start;
       AudioBufferSourceNode.prototype.start = function () { stat.starts++; return st.apply(this, arguments); };
       var bc = (window.BaseAudioContext || window.AudioContext).prototype, dec = bc.decodeAudioData;
@@ -104,7 +105,7 @@
       };
     } catch (e) {}
 
-    if (/debug/.test(location.hash + location.search)) {
+    if (dbg) {
       window.addEventListener("load", function () {
         var box = document.createElement("div");
         box.style.cssText = "position:fixed;left:4px;top:4px;z-index:99;background:rgba(0,0,0,.8);color:#0f0;font:11px/1.35 monospace;padding:6px;max-width:70vw;white-space:pre-wrap;pointer-events:auto";
@@ -121,7 +122,14 @@
           try { c.resume(); var s = c.createBufferSource(); s.buffer = best.b; s.connect(c.destination); s.start(); s.stop(c.currentTime + 3); beeps += " clip " + best.b.duration.toFixed(1) + "s peak=" + best.p.toFixed(3); } catch (e) { beeps += " clip err:" + e.message; }
         });
         box.appendChild(out); box.appendChild(btn); box.appendChild(btn2); document.body.appendChild(box);
-        var beeps = "";
+        var beeps = "", outPeak = 0;
+        var meter = setInterval(function () { if (ctxs[0]) { clearInterval(meter); setupMeter(); } }, 200);
+        function setupMeter() { try {   // measure what actually reaches the speakers: route everything bound for the destination through an analyser
+          var gc = ctxs[0], an = gc.createAnalyser(), bus = gc.createGain(), tbuf = new Float32Array(2048), oc = AudioNode.prototype.connect;
+          bus.connect(an); oc.call(an, gc.destination);
+          AudioNode.prototype.connect = function (dst) { if (dst === gc.destination && this !== an) return oc.call(this, bus); return oc.apply(this, arguments); };
+          setInterval(function () { an.getFloatTimeDomainData(tbuf); var m = 0; for (var i = 0; i < tbuf.length; i++) { var v = Math.abs(tbuf[i]); if (v > m) m = v; } outPeak = Math.max(outPeak * 0.9, m); }, 50);
+        } catch (e) {} }
         btn.addEventListener("click", function (ev) {
           ev.stopPropagation();
           try {   // beep through the game's own AudioContext
@@ -137,7 +145,8 @@
             "starts=" + stat.starts + " decode ok=" + stat.decOk + " err=" + stat.decErr + (stat.lastErr ? " (" + stat.lastErr + ")" : "") + "\n" +
             "decoded: loud=" + stat.loud + " silent=" + stat.silent + " sr=" + stat.bufs.slice(0, 3).map(function (x) { return x.b.sampleRate; }).join(",") + "\n" +
             "gains=" + stat.gains.length + " zero=" + stat.gains.filter(function (g) { return g.gain.value === 0; }).length + " vals=" + stat.gains.slice(0, 6).map(function (g) { return g.gain.value.toFixed(2); }).join(",") + "\n" +
-            "activated=" + (navigator.userActivation ? navigator.userActivation.hasBeenActive : "?") + "\n" + beeps;
+            "OUTPUT level=" + outPeak.toFixed(3) + "\n" +
+            "activated=" +(navigator.userActivation ? navigator.userActivation.hasBeenActive : "?") + "\n" + beeps;
         }, 500);
       });
     }
@@ -148,9 +157,9 @@
   var status = document.querySelector("#status");
   var config = {
     arguments: [],
-    dataUrl: "Build/f9339e09b366bedb87c52d8eac2a9cda.data.unityweb",
-    frameworkUrl: "Build/f69e618c2d7774b0de17ade04dd84854.framework.js.unityweb",
-    codeUrl: "Build/26af6b87052a39e1d0043866bbed06f2.wasm.unityweb",
+    dataUrl: "Build/2b9c953de64ed4614d6f0407c676fc53.data.unityweb",
+    frameworkUrl: "Build/926299ff48d5099f91c24bffb2db6dc9.framework.js.unityweb",
+    codeUrl: "Build/3a09a6acf86fe95fa26f8660e6c3725c.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "ScoopEverything",
     productName: "金魚すくい、やりすぎた。",
@@ -159,7 +168,7 @@
     devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   };
   var script = document.createElement("script");
-  script.src = "Build/e69b737276e9163d8147b0824268534f.loader.js";
+  script.src = "Build/f53b64f78eee7e7a06da7d6f9f10a6b1.loader.js";
   script.onload = function () {
     createUnityInstance(canvas, config, function (p) { fill.style.width = (p * 100) + "%"; })
       .then(function () {
