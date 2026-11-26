@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>金魚すくい、やりすぎた。 / Scoop Everything! — 無料でブラウザで遊べる</title>
+<meta name="description" content="金魚1匹から始めて、川・池・海、最後は海そのものまで。すくいすぎるドット絵放置ゲーム。完全無料・広告なし・ブラウザでそのまま遊べます。">
+<link rel="canonical" href="https://kami-tools-box.com/kingyo-sukui/">
+<meta property="og:title" content="金魚すくい、やりすぎた。">
+<meta property="og:description" content="金魚1匹から、海そのものまで。すくいすぎるドット絵ゲーム。ブラウザで無料。">
+<meta property="og:image" content="https://kami-tools-box.com/kingyo-sukui/og.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="icon.png">
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #0b1030; overflow: hidden; touch-action: none; }
+  #unity-canvas { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh; display: block; background: #0b1030; outline: none; }
+  #loading { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px;
+             color: #f2e8d4; font: 600 16px/1.6 system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif; text-align: center; }
+  #loading img { width: 112px; height: 112px; image-rendering: pixelated; border-radius: 22px; }
+  #loading h1 { margin: 0; font-size: 22px; color: #ffd66e; }
+  #bar { width: min(320px, 70vw); height: 12px; background: #1c2550; border-radius: 6px; overflow: hidden; }
+  #fill { height: 100%; width: 0; background: linear-gradient(90deg, #d6362e, #ffd66e); transition: width .2s; }
+  #note { font-size: 12px; color: #b9b0a4; max-width: 80vw; }
+  #note a { color: #7fd8ff; }
+  #rotate { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(11,16,48,.94);
+            color: #f2e8d4; font: 600 18px/1.6 system-ui, sans-serif; text-align: center; z-index: 10; padding: 24px; }
+  @media (orientation: portrait) and (max-width: 900px) { #rotate.ready { display: flex; } }
+  #error { color: #ff8a80; display: none; }
+</style>
+</head>
+<body>
+<canvas id="unity-canvas" tabindex="-1"></canvas>
+<div id="loading">
+  <img src="icon.png" alt="">
+  <h1>金魚すくい、やりすぎた。</h1>
+  <div id="bar"><div id="fill"></div></div>
+  <div id="status">読み込み中… / Loading…</div>
+  <div id="error"></div>
+  <div id="note">完全無料・広告なし。進行はこのブラウザに保存されます。<br>
+    <a href="privacy.html" target="_blank" rel="noopener">プライバシーポリシー</a></div>
+</div>
+<div id="rotate">📱↻<br>横向きにしてください<br>Please rotate your device</div>
+<script>
+  var canvas = document.querySelector("#unity-canvas");
+  var fill = document.querySelector("#fill");
+  var status = document.querySelector("#status");
+  var config = {
+    arguments: [],
+    dataUrl: "Build/WebGL.data.unityweb",
+    frameworkUrl: "Build/WebGL.framework.js.unityweb",
+    codeUrl: "Build/WebGL.wasm.unityweb",
+    streamingAssetsUrl: "StreamingAssets",
+    companyName: "ScoopEverything",
+    productName: "金魚すくい、やりすぎた。",
+    productVersion: "1.0.0",
+    matchWebGLToCanvasSize: true,
+    devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+  };
+  var script = document.createElement("script");
+  script.src = "Build/WebGL.loader.js";
+  script.onload = function () {
+    createUnityInstance(canvas, config, function (p) { fill.style.width = (p * 100) + "%"; })
+      .then(function () {
+        document.querySelector("#loading").remove();
+        document.querySelector("#rotate").classList.add("ready");
+        canvas.focus();
+      })
+      .catch(function (message) {
+        status.textContent = "読み込みに失敗しました / Failed to load";
+        var e = document.querySelector("#error"); e.style.display = "block"; e.textContent = message;
+      });
+  };
+  document.body.appendChild(script);
+</script>
+</body>
+</html>
