@@ -47,9 +47,9 @@
   var status = document.querySelector("#status");
   var config = {
     arguments: [],
-    dataUrl: "Build/k11261709.data.unityweb",
-    frameworkUrl: "Build/k11261709.framework.js.unityweb",
-    codeUrl: "Build/k11261709.wasm.unityweb",
+    dataUrl: "Build/f9339e09b366bedb87c52d8eac2a9cda.data.unityweb",
+    frameworkUrl: "Build/f69e618c2d7774b0de17ade04dd84854.framework.js.unityweb",
+    codeUrl: "Build/26af6b87052a39e1d0043866bbed06f2.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "ScoopEverything",
     productName: "金魚すくい、やりすぎた。",
@@ -58,7 +58,7 @@
     devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   };
   var script = document.createElement("script");
-  script.src = "Build/k11261709.loader.js";
+  script.src = "Build/e69b737276e9163d8147b0824268534f.loader.js";
   script.onload = function () {
     createUnityInstance(canvas, config, function (p) { fill.style.width = (p * 100) + "%"; })
       .then(function () {
