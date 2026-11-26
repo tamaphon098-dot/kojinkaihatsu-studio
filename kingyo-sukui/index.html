@@ -83,13 +83,22 @@
     window.__scoopAudio = ctxs;   // for debugging
 
     // counters for the #debug overlay
-    var stat = window.__scoopStat = { starts: 0, decOk: 0, decErr: 0, lastErr: "" };
+    var stat = window.__scoopStat = { starts: 0, decOk: 0, decErr: 0, lastErr: "", silent: 0, loud: 0, bufs: [], gains: [] };
+    function peak(b) {
+      var m = 0;
+      for (var ch = 0; ch < b.numberOfChannels; ch++) { var d = b.getChannelData(ch), step = Math.max(1, (d.length / 20000) | 0); for (var i = 0; i < d.length; i += step) { var v = d[i] < 0 ? -d[i] : d[i]; if (v > m) m = v; } }
+      return m;
+    }
+    try {
+      var cg = (window.BaseAudioContext || window.AudioContext).prototype, mkGain = cg.createGain;
+      cg.createGain = function () { var g = mkGain.apply(this, arguments); if (stat.gains.length < 400) stat.gains.push(g); return g; };
+    } catch (e) {}
     try {
       var st = AudioBufferSourceNode.prototype.start;
       AudioBufferSourceNode.prototype.start = function () { stat.starts++; return st.apply(this, arguments); };
       var bc = (window.BaseAudioContext || window.AudioContext).prototype, dec = bc.decodeAudioData;
       bc.decodeAudioData = function (buf, ok, ng) {
-        var p = dec.call(this, buf, function (b) { stat.decOk++; if (ok) ok(b); }, function (e) { stat.decErr++; stat.lastErr = String(e && (e.message || e.name) || e); if (ng) ng(e); });
+        var p = dec.call(this, buf, function (b) { stat.decOk++; try { var p = peak(b); if (p < 0.001) stat.silent++; else stat.loud++; stat.bufs.push({ b: b, p: p }); } catch (e) {} if (ok) ok(b); }, function (e) { stat.decErr++; stat.lastErr = String(e && (e.message || e.name) || e); if (ng) ng(e); });
         if (p && p.catch) p.catch(function () {});
         return p;
       };
@@ -102,7 +111,16 @@
         var btn = document.createElement("button");
         btn.textContent = "🔊 テスト音"; btn.style.cssText = "display:block;margin-top:6px;font-size:16px;padding:6px 12px";
         var out = document.createElement("div");
-        box.appendChild(out); box.appendChild(btn); document.body.appendChild(box);
+        var btn2 = document.createElement("button");
+        btn2.textContent = "🎵 ゲーム音テスト"; btn2.style.cssText = btn.style.cssText;
+        btn2.addEventListener("click", function (ev) {   // play the longest decoded game clip straight to the speakers
+          ev.stopPropagation();
+          var c = ctxs[0], best = null;
+          stat.bufs.forEach(function (x) { if (!best || x.b.duration > best.b.duration) best = x; });
+          if (!c || !best) { beeps += " no-buffer"; return; }
+          try { c.resume(); var s = c.createBufferSource(); s.buffer = best.b; s.connect(c.destination); s.start(); s.stop(c.currentTime + 3); beeps += " clip " + best.b.duration.toFixed(1) + "s peak=" + best.p.toFixed(3); } catch (e) { beeps += " clip err:" + e.message; }
+        });
+        box.appendChild(out); box.appendChild(btn); box.appendChild(btn2); document.body.appendChild(box);
         var beeps = "";
         btn.addEventListener("click", function (ev) {
           ev.stopPropagation();
@@ -117,6 +135,8 @@
           out.textContent = navigator.userAgent.replace(/^Mozilla\/5.0 /, "") + "\n" +
             "ctx: " + ctxs.map(function (c) { return c.state + " t=" + c.currentTime.toFixed(1) + " " + c.sampleRate; }).join(" | ") + "\n" +
             "starts=" + stat.starts + " decode ok=" + stat.decOk + " err=" + stat.decErr + (stat.lastErr ? " (" + stat.lastErr + ")" : "") + "\n" +
+            "decoded: loud=" + stat.loud + " silent=" + stat.silent + " sr=" + stat.bufs.slice(0, 3).map(function (x) { return x.b.sampleRate; }).join(",") + "\n" +
+            "gains=" + stat.gains.length + " zero=" + stat.gains.filter(function (g) { return g.gain.value === 0; }).length + " vals=" + stat.gains.slice(0, 6).map(function (g) { return g.gain.value.toFixed(2); }).join(",") + "\n" +
             "activated=" + (navigator.userActivation ? navigator.userActivation.hasBeenActive : "?") + "\n" + beeps;
         }, 500);
       });
