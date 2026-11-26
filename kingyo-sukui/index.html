@@ -42,6 +42,47 @@
 </div>
 <div id="rotate">📱↻<br>横向きにしてください<br>Please rotate your device</div>
 <script>
+  // ---- audio unlock for in-app browsers (X / LINE / Instagram) and iPhone silent mode ----
+  // * remembers every AudioContext Unity creates and resumes it on each real user gesture until it runs
+  // * iOS 17+: audioSession "playback" makes sound play even with the ring/silent switch on silent
+  // * older iOS: playing a short silent <audio> inside the gesture switches the page to the playback category
+  (function () {
+    var ctxs = [];
+    ["AudioContext", "webkitAudioContext"].forEach(function (n) {
+      var C = window[n]; if (!C) return;
+      var W = function (o) { var c = o !== undefined ? new C(o) : new C(); ctxs.push(c); return c; };
+      W.prototype = C.prototype; window[n] = W;
+    });
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (e) {}
+    var silent = null;
+    function silentUrl() {   // 0.05s of silence as a WAV blob
+      var n = 2205, b = new ArrayBuffer(44 + n * 2), v = new DataView(b), s = function (o, t) { for (var i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
+      s(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); s(8, "WAVEfmt "); v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
+      v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); s(36, "data"); v.setUint32(40, n * 2, true);
+      return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
+    }
+    var htmlDone = false;
+    function unlock() {
+      if (!htmlDone) {
+        htmlDone = true;
+        try { silent = new Audio(silentUrl()); silent.setAttribute("playsinline", ""); var p = silent.play(); if (p && p.catch) p.catch(function () { htmlDone = false; }); } catch (e) { htmlDone = false; }
+      }
+      ctxs.forEach(function (c) {
+        if (c.state !== "running") {
+          try { c.resume(); } catch (e) {}
+          try { var src = c.createBufferSource(); src.buffer = c.createBuffer(1, 1, 22050); src.connect(c.destination); src.start(0); } catch (e) {}
+        }
+      });
+    }
+    ["pointerdown", "pointerup", "touchstart", "touchend", "mousedown", "click", "keydown"].forEach(function (t) {
+      document.addEventListener(t, unlock, true);
+    });
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) ctxs.forEach(function (c) { if (c.state !== "running") try { c.resume(); } catch (e) {} });
+    });
+    window.__scoopAudio = ctxs;   // for debugging
+  })();
+
   var canvas = document.querySelector("#unity-canvas");
   var fill = document.querySelector("#fill");
   var status = document.querySelector("#status");
