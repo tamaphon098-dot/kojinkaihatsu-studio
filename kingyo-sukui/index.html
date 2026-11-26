@@ -157,18 +157,18 @@
   var status = document.querySelector("#status");
   var config = {
     arguments: [],
-    dataUrl: "Build/2b9c953de64ed4614d6f0407c676fc53.data.unityweb",
-    frameworkUrl: "Build/926299ff48d5099f91c24bffb2db6dc9.framework.js.unityweb",
-    codeUrl: "Build/3a09a6acf86fe95fa26f8660e6c3725c.wasm.unityweb",
+    dataUrl: "Build/0655f96e673ed440723dc6c2d7426aa7.data.unityweb",
+    frameworkUrl: "Build/f21588444a74bf3cba5616563a962c12.framework.js.unityweb",
+    codeUrl: "Build/a1424682edb1187b08d351d34e759e48.wasm.unityweb",
     streamingAssetsUrl: "StreamingAssets",
     companyName: "ScoopEverything",
     productName: "金魚すくい、やりすぎた。",
-    productVersion: "1.0.0",
+    productVersion: "1.0.1",
     matchWebGLToCanvasSize: true,
     devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
   };
   var script = document.createElement("script");
-  script.src = "Build/f53b64f78eee7e7a06da7d6f9f10a6b1.loader.js";
+  script.src = "Build/c870b01ed8000936a09bd02c6e963b1e.loader.js";
   script.onload = function () {
     createUnityInstance(canvas, config, function (p) { fill.style.width = (p * 100) + "%"; })
       .then(function () {
